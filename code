@@ -1,0 +1,98 @@
+import java.util.Random;
+
+public class Player {
+    private int health;
+    private int strength;
+    private int attack;
+
+    public Player(int health, int strength, int attack) {
+        this.health = health;
+        this.strength = strength;
+        this.attack = attack;
+    }
+
+    public int getHealth() {
+        return health;
+    }
+
+    public int getStrength() {
+        return strength;
+    }
+
+    public int getAttack() {
+        return attack;
+    }
+
+    public void reduceHealth(int damage) {
+        health -= damage;
+        if (health < 0) {
+            health = 0;
+        }
+    }
+}
+
+class Die {
+    private static final int MIN_VALUE = 1;
+    private static final int MAX_VALUE = 6;
+
+    private Random random;
+
+    public Die() {
+        random = new Random();
+    }
+
+    public int roll() {
+        return random.nextInt(MAX_VALUE - MIN_VALUE + 1) + MIN_VALUE;
+    }
+}
+
+public class MagicalArena {
+    private Player player1;
+    private Player player2;
+    private Die attackingDie;
+    private Die defendingDie;
+
+    public MagicalArena(Player player1, Player player2) {
+        this.player1 = player1;
+        this.player2 = player2;
+        this.attackingDie = new Die();
+        this.defendingDie = new Die();
+    }
+
+    public void playGame() {
+        Player firstAttacker = determineFirstAttacker();
+        Player secondAttacker = (firstAttacker == player1) ? player2 : player1;
+
+        while (player1.getHealth() > 0 && player2.getHealth() > 0) {
+            attack(firstAttacker, secondAttacker);
+            if (secondAttacker.getHealth() > 0) {
+                attack(secondAttacker, firstAttacker);
+            }
+        }
+
+        Player winner = (player1.getHealth() > 0) ? player1 : player2;
+        System.out.println("Game Over");
+        System.out.println("Winner: Player " + winner);
+    }
+
+    private Player determineFirstAttacker() {
+        return (player1.getHealth() < player2.getHealth()) ? player1 : player2;
+    }
+
+    private void attack(Player attacker, Player defender) {
+        int attackValue = attacker.getAttack() * attackingDie.roll();
+        int defenseValue = defender.getStrength() * defendingDie.roll();
+        int damage = Math.max(0, attackValue - defenseValue);
+        defender.reduceHealth(damage);
+        System.out.println(attacker + " attacked " + defender + " and caused " + damage + " damage");
+    }
+}
+
+public class Main {
+    public static void main(String[] args) {
+        Player player1 = new Player(50, 5, 10);
+        Player player2 = new Player(100, 10, 5);
+        MagicalArena magicalArena = new MagicalArena(player1, player2);
+        magicalArena.playGame();
+    }
+}
